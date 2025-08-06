@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }} - EduPlatform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Course Info -->
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}">Kurslar</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'courses:course_list' %}?category={{ course.category.id }}">{{ course.category.name }}</a></li>
+                    <li class="breadcrumb-item active">{{ course.title }}</li>
+                </ol>
+            </nav>
+
+            <div class="card mb-4">
+                {% if course.image %}
+                <img src="{{ course.image.url }}" class="card-img-top" alt="{{ course.title }}" style="height: 400px; object-fit: cover;">
+                {% endif %}
+                
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="card-title">{{ course.title }}</h1>
+                            <p class="text-muted">O'qituvchi: {{ course.instructor.username }}</p>
+                        </div>
+                        <div class="text-end">
+                            <div class="rating mb-2">
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= course.average_rating %}
+                                <i class="fas fa-star"></i>
+                                {% else %}
+                                <i class="far fa-star"></i>
+                                {% endif %}
+                                {% endfor %}
+                                <span class="ms-1">({{ course.rating_set.count }} baho)</span>
+                            </div>
+                            <h3 class="text-primary">
+                                {% if course.price == 0 %}
+                                Bepul
+                                {% else %}
+                                {{ course.price }} so'm
+                                {% endif %}
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-play-circle fa-2x text-primary mb-2"></i>
+                                <p class="mb-0">{{ course.total_lessons }} dars</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                                <p class="mb-0">Vaqt cheklanmagan</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-certificate fa-2x text-primary mb-2"></i>
+                                <p class="mb-0">Sertifikat</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <i class="fas fa-mobile-alt fa-2x text-primary mb-2"></i>
+                                <p class="mb-0">Mobil qo'llab-quvvatlash</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4>Kurs haqida</h4>
+                    <p class="card-text">{{ course.description }}</p>
+
+                    {% if not user_has_course and course.price > 0 %}
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{% url 'courses:purchase_course' course.id %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-shopping-cart me-2"></i>Bu kurs siz uchun tekin
+                        </a>
+                    </div>
+                    {% elif user_has_course %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>Bu kurs sizga kegin
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Lessons -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Darslar ro'yxati</h4>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for lesson in lessons %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                {% if lesson.is_free %}
+                                <span class="badge bg-success">Bepul</span>
+                                {% else %}
+                                <span class="badge bg-warning">Pulli</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="mb-1">{{ lesson.title }}</h6>
+                                <small class="text-muted">{{ lesson.description|truncatewords:10 }}</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <small class="text-muted me-3">{{ lesson.duration }} daqiqa</small>
+                            {% if lesson.is_free or user_has_course %}
+                            <a href="{% url 'courses:lesson_detail' course.id lesson.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-play me-1"></i>Ko'rish
+                            </a>
+                            {% else %}
+                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                <i class="fas fa-lock me-1"></i>Bloklangan
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted">
+                        <i class="fas fa-info-circle me-2"></i>Darslar hali qo'shilmagan
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Rating Form -->
+            {% if user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Kursga baho bering</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.rating.id_for_label }}" class="form-label">Baho</label>
+                            {{ form.rating }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.comment.id_for_label }}" class="form-label">Izoh</label>
+                            {{ form.comment }}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-star me-1"></i>Baho berish
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Course Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Kurs ma'lumotlari</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-tag me-2 text-primary"></i>
+                            <strong>Kategoriya:</strong> {{ course.category.name }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-user me-2 text-primary"></i>
+                            <strong>O'qituvchi:</strong> {{ course.instructor.username }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-calendar me-2 text-primary"></i>
+                            <strong>Yaratilgan:</strong> {{ course.created_at|date:"d.m.Y" }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-play-circle me-2 text-primary"></i>
+                            <strong>Darslar soni:</strong> {{ course.total_lessons }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Related Courses -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">O'xshash kurslar</h5>
+                </div>
+                <div class="card-body">
+                    {% for related_course in course.category.course_set.all|slice:":3" %}
+                    {% if related_course != course %}
+                    <div class="d-flex mb-3">
+                        {% if related_course.image %}
+                        <img src="{{ related_course.image.url }}" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-image text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-1">
+                                <a href="{% url 'courses:course_detail' related_course.id %}" class="text-decoration-none">
+                                    {{ related_course.title }}
+                                </a>
+                            </h6>
+                            <small class="text-muted">
+                                {% if related_course.price == 0 %}
+                                Bepul
+                                {% else %}
+                                {{ related_course.price }} so'm
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% empty %}
+                    <p class="text-muted">O'xshash kurslar mavjud emas</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

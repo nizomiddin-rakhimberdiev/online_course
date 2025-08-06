@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Mening kurslarim - EduPlatform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Mening kurslarim</h1>
+            
+            {% if user_courses %}
+            <div class="row">
+                {% for user_course in user_courses %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card course-card h-100">
+                        {% if user_course.course.image %}
+                        <img src="{{ user_course.course.image.url }}" class="card-img-top" alt="{{ user_course.course.title }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-2">
+                                <span class="badge bg-primary">{{ user_course.course.category.name }}</span>
+                                <span class="badge bg-success">Sotib olingan</span>
+                            </div>
+                            
+                            <h5 class="card-title">{{ user_course.course.title }}</h5>
+                            <p class="card-text text-muted">{{ user_course.course.description|truncatewords:15 }}</p>
+                            
+                            <div class="mb-3">
+                                <div class="rating">
+                                    {% for i in "12345" %}
+                                    {% if forloop.counter <= user_course.course.average_rating %}
+                                    <i class="fas fa-star"></i>
+                                    {% else %}
+                                    <i class="far fa-star"></i>
+                                    {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-1 text-muted">({{ user_course.course.rating_set.count }})</span>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-play-circle me-1"></i>{{ user_course.course.total_lessons }} dars
+                                </small>
+                            </div>
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">Sotib olingan: {{ user_course.purchased_at|date:"d.m.Y" }}</small>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'courses:course_detail' user_course.course.id %}" class="btn btn-primary">
+                                        <i class="fas fa-play me-1"></i>Kursni davom ettirish
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                <h3>Sizda sotib olingan kurslar yo'q</h3>
+                <p class="text-muted">Birinchi kursingizni sotib olish uchun kurslar ro'yxatiga o'ting</p>
+                <a href="{% url 'courses:course_list' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search me-2"></i>Kurslarni ko'rish
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

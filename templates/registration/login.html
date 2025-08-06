@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Tizimga kirish - EduPlatform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-header text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-sign-in-alt me-2"></i>Tizimga kirish
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">Foydalanuvchi nomi</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                            <div class="text-danger">
+                                {% for error in form.username.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.password.id_for_label }}" class="form-label">Parol</label>
+                            {{ form.password }}
+                            {% if form.password.errors %}
+                            <div class="text-danger">
+                                {% for error in form.password.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Kirish
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <p class="mb-0">
+                        Hisobingiz yo'qmi? 
+                        <a href="{% url 'accounts:register' %}" class="text-decoration-none">Ro'yxatdan o'tish</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        border-radius: 0.375rem;
+    }
+    .btn {
+        border-radius: 0.375rem;
+    }
+</style>
+{% endblock %} 
